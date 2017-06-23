@@ -54,9 +54,9 @@ func ProcessHttp(rawurl string, timeout time.Duration, statusCode int, notCode b
 	
 	if substring != "" {
 		if notMatch {
-			critical = !strings.Contains(string(body), substring)
-		} else {
 			critical = strings.Contains(string(body), substring)
+		} else {
+			critical = !strings.Contains(string(body), substring)
 		}
 	}
 	if critical {

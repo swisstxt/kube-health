@@ -22,6 +22,16 @@
 			}
 		},
 		{
+			"type": "ping",
+			"url": "8.8.8.1.10",
+			"timeout": 3,
+			"ping": {
+				"count": 3,
+				"warning": 30,
+				"error": 60
+			}
+		},
+		{
 			"type": "http",
 			"url": "https://raw.githubusercontent.com/swisstxt/kube-health/master/README.md",
 			"timeout": 10,

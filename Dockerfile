@@ -20,6 +20,9 @@ RUN apt-get update && apt-get upgrade -y
 # ENV LANG en_US.UTF-8
 # RUN apt-get update
 
+# Install dependencies
+RUN apt-get install -y --no-install-recommends ca-certificates
+
 # Create a user for the web server
 RUN useradd -d /health -r -M -s /bin/bash health && \
 	mkdir -p /health && \

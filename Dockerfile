@@ -21,7 +21,7 @@ RUN apt-get update && apt-get upgrade -y
 # RUN apt-get update
 
 # Install dependencies
-RUN apt-get install -y --no-install-recommends ca-certificates
+RUN apt-get install -y --no-install-recommends ca-certificates iputils-ping
 
 # Create a user for the web server
 RUN useradd -d /health -r -M -s /bin/bash health && \
@@ -34,8 +34,8 @@ COPY bin/kubehealth /usr/bin/kubehealth
 # Install the default configuration file
 COPY example-config.json /etc/kubehealth/config.json
 
-# TODO listening for ICMP packets requires root
-#USER health
+# Can run with reduced privileges
+USER health
 
 # This is the port our web server will listen on
 EXPOSE 8080

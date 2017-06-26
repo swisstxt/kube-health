@@ -1,8 +1,9 @@
 package health
 
 import (
-	"fmt"
 	"time"
+	"path"
+	"strings"
 	"net/http"
 	"encoding/json"
 )
@@ -26,6 +27,10 @@ type Result struct {
 
 type Server struct {
 	Config *Configuration
+}
+
+func SanitisePath(line string) string {
+	return strings.ToLower(path.Clean(line))
 }
 
 func (server *Server) ProcessCheck() ([]byte, int, error) {
@@ -96,20 +101,27 @@ func (server *Server) ProcessCheck() ([]byte, int, error) {
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	if request.URL.Path == "/" {
-		content, status, err := server.ProcessCheck()
-		if err == nil {
+	switch SanitisePath(request.URL.Path) {
+		case "/":
+			content, status, err := server.ProcessCheck()
+			if err == nil {
+				writer.Header().Set("Content-Type", "application/json")
+				writer.WriteHeader(status)
+				writer.Write(content)
+			} else {
+				writer.Header().Set("Content-Type", "application/json")
+				writer.WriteHeader(http.StatusInternalServerError)
+				writer.Write([]byte("{\"status\":\"error\",\"error\":\"internal server error\"}"))
+			}
+		case "/health":
+			fallthrough
+		case "/live":
+				writer.Header().Set("Content-Type", "application/json")
+				writer.WriteHeader(http.StatusOK)
+				writer.Write([]byte("{\"status\":\"ok\"}"))
+		default:
 			writer.Header().Set("Content-Type", "application/json")
-			writer.WriteHeader(status)
-			writer.Write(content)
-		} else {
-			writer.Header().Set("Content-Type", "application/json")
-			writer.WriteHeader(http.StatusInternalServerError)
-			writer.Write([]byte(fmt.Sprintf("{'error':'internal server error','reason':'%s'}", err.Error())))
-		}
-	} else {
-		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusNotFound)
-		writer.Write([]byte("{'error':'invalid path'}"))
+			writer.WriteHeader(http.StatusNotFound)
+			writer.Write([]byte("{\"status\":\"error\",\"error\":\"invalid path\"}"))
 	}
 }

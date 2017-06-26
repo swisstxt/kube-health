@@ -22,22 +22,29 @@ make
 
 Run the container:
 ```
-docker run -ti --rm kube-health
+docker run -ti --rm -p 127.0.0.1:8080:8080 kube-health
 ```
+
+Open http://127.0.0.1:8080/ in your web browser and see the result of the example checks.
 
 ## Install
 
-Push the docker container to your Docker registry:
+Tag and push the docker container to your Docker registry (replace docker-registry.tld with the
+correct host name):
 ```
-TODO
+docker tag kube-health <docker-registry.tld>/kube-health
+docker push <docker-registry.tld>/kube-health
 ```
 
-Copy the [example configuration](example-config.json) to `config.json`
+Copy the [example configuration](example-config.json) to `config.json`.
+
+Edit kube-health.yaml and change the line that says `- image: kube-health` to
+`- image: <docker-registry.tld>/kube-health`.
 
 Create a deployment in your Kubernetes cluster and add the configuration file:
 ```
-kubectl apply -f kube-health.yaml -n default
-kubectl create configmap kube-health --from-file config.json
+kubectl apply -f kube-health.yaml -n kube-system
+kubectl create configmap kube-health --from-file config.json -n kube-system
 ```
 
 ## Customise
@@ -48,7 +55,7 @@ Modify the tests to your heart's content.
 
 Save and run:
 ```
-kubectl create configmap kube-health --from-file config.json -o yaml --dry-run | kubectl apply -f - -n default
+kubectl create configmap kube-health --from-file config.json -o yaml --dry-run | kubectl apply -f - -n kube-system
 ```
 
 ## Legal

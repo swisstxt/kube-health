@@ -18,20 +18,20 @@ spec:
         name: kube-health
         livenessProbe:
           httpGet:
-            path: /
+            path: /live
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 10
-          timeoutSeconds: 30
+          timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 5
         readinessProbe:
           httpGet:
-            path: /
+            path: /healthz
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 10
-          timeoutSeconds: 30
+          timeoutSeconds: 5
         ports:
         - containerPort: 8080
           protocol: TCP

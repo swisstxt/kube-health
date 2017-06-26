@@ -113,7 +113,7 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 				writer.WriteHeader(http.StatusInternalServerError)
 				writer.Write([]byte("{\"status\":\"error\",\"error\":\"internal server error\"}"))
 			}
-		case "/health":
+		case "/healthz":
 			fallthrough
 		case "/live":
 				writer.Header().Set("Content-Type", "application/json")

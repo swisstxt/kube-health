@@ -23,6 +23,7 @@ type CheckConfiguration struct {
 		InvertStatus bool `json:"invert_status"`
 		Contains string `json:"contains"`
 		InvertMatch bool `json:"invert_match"`
+		CaBundle string `json:"ca_certificates"`
 	} `json:"http"`
 }
 

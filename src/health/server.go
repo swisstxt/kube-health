@@ -58,7 +58,7 @@ func (server *Server) ProcessCheck() ([]byte, int, error) {
 					result.Status = "ok"
 				}
 			case "http":
-				message, err := ProcessHttp(check.Url, time.Second * time.Duration(check.Timeout), check.Http.Status, check.Http.InvertStatus, check.Http.Contains, check.Http.InvertMatch)
+				message, err := ProcessHttp(check.Url, time.Second * time.Duration(check.Timeout), check.Http.Status, check.Http.InvertStatus, check.Http.Contains, check.Http.InvertMatch, check.Http.CaBundle)
 				result.Message = message
 				if err != nil {
 					if err.(ErrorWithLevel).IsCritical() {

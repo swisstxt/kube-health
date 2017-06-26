@@ -1,11 +1,16 @@
 package health
 
 import (
+	"os"
 	"fmt"
 	"time"
 	"strings"
+	"errors"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"crypto/tls"
+	"crypto/x509"
 )
 
 const (
@@ -14,12 +19,52 @@ const (
 	errHttpRead = Error("HTTP read")
 	errHttpStatus = Error("HTTP status code")
 	errHttpContent = Error("HTTP response content")
+	errHttpBundleLoad = Error("HTTP CA bundle load")
 )
 
-func ProcessHttp(rawurl string, timeout time.Duration, statusCode int, notCode bool, substring string, notMatch bool) (string, error) {
+func ProcessHttp(rawurl string, timeout time.Duration, statusCode int, notCode bool, substring string, notMatch bool, caBundle string) (string, error) {
 	client := &http.Client{
 		Timeout: timeout,
 	}
+	if caBundle != "" {
+		var err error
+		var bundle *os.File
+		var pem []byte
+		var certs *x509.CertPool
+		
+		bundle, err = os.Open(caBundle)
+		if err == nil {
+			pem, err = ioutil.ReadAll(bundle)
+		}
+		if err == nil {
+			certs = x509.NewCertPool()
+		}
+		if !certs.AppendCertsFromPEM(pem) {
+			err = errors.New("invalid CA bundle")
+		}
+		
+		if err != nil {
+			message := fmt.Sprintf("Error loading certificates: %s", err.Error())
+			return message, errHttpBundleLoad
+		}
+		
+		// from http.DefaultTransport
+		client.Transport = &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout: 30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns: 100,
+			IdleConnTimeout: 90 * time.Second,
+			TLSHandshakeTimeout: 10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig: &tls.Config{
+				RootCAs: certs,
+			},
+		}
+	}
+	
 	request, err := http.NewRequest("GET", rawurl, nil)
 	if err != nil {
 		message := fmt.Sprintf("Invalid URL %s: %s", rawurl, err.Error())

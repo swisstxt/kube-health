@@ -18,4 +18,4 @@ vendor:
 	cd src/health; ${GOVENDOR} update +v +m
 
 bin/kubehealth: src/health.go ${SOURCES}
-	${GO} build -o $@ $<
+	${GO} build -tags netgo -o $@ $<

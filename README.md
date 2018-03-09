@@ -53,6 +53,15 @@ Open `config.json` in your favourite text editor.
 
 Modify the tests to your heart's content.
 
+The log levels are as follows:
+
+0. only return status and no check results
+1. return check results when critical
+2. also return check results when unknown or warning
+3. always return check results
+
+It is recommended to keep the log level at 1 or 2.
+
 Save and run:
 ```
 kubectl create configmap kube-health --from-file config.json -o yaml --dry-run | kubectl apply -f - -n kube-system

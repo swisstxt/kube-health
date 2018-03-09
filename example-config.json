@@ -1,5 +1,6 @@
 {
 	"listen": "0.0.0.0:8080",
+	"loglevel": 2,
 	"checks": [
 		{
 			"type": "ping",

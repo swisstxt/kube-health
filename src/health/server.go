@@ -12,6 +12,7 @@ const (
 	HttpStatusOk = http.StatusOK
 	HttpStatusWarning = 280
 	HttpStatusCritical = 290
+	HttpStatusUnknown = 270
 )
 
 type CheckResult struct {
@@ -22,21 +23,37 @@ type CheckResult struct {
 
 type Result struct {
 	Status string `json:"status"`
-	Results []CheckResult `json:"results"`
+	Results []CheckResult `json:"results,omitempty"`
 }
 
 type Server struct {
 	Config *Configuration
 }
 
-func SanitisePath(line string) string {
+func sanitisePath(line string) string {
 	return strings.ToLower(path.Clean(line))
 }
 
-func (server *Server) ProcessCheck() ([]byte, int, error) {
+func processError(result *CheckResult, message string, err error, loglevel int, critical, warning *bool) {
+	result.Message = message
+	if err != nil {
+		if err.(ErrorWithLevel).IsCritical() {
+			result.Status = "critical"
+			*critical = true
+		} else {
+			result.Status = "warning"
+			*warning = true
+		}
+	} else {
+		result.Status = "ok"
+	}
+}
+
+func (server *Server) processCheck() ([]byte, int, error) {
 	results := make([]CheckResult, len(server.Config.Checks))
 	warning := false
 	critical := false
+	unknown := false
 	
 	for i, check := range server.Config.Checks {
 		result := CheckResult{
@@ -45,33 +62,12 @@ func (server *Server) ProcessCheck() ([]byte, int, error) {
 		switch check.Type {
 			case "ping":
 				message, err := ProcessPing(check.Url, time.Second * time.Duration(check.Timeout), check.Ping.Count, float64(check.Ping.Warning), float64(check.Ping.Error))
-				result.Message = message
-				if err != nil {
-					if err.(ErrorWithLevel).IsCritical() {
-						result.Status = "critical"
-						critical = true
-					} else {
-						result.Status = "warning"
-						warning = true
-					}
-				} else {
-					result.Status = "ok"
-				}
+				processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
 			case "http":
 				message, err := ProcessHttp(check.Url, time.Second * time.Duration(check.Timeout), check.Http.Status, check.Http.InvertStatus, check.Http.Contains, check.Http.InvertMatch, check.Http.CaBundle)
-				result.Message = message
-				if err != nil {
-					if err.(ErrorWithLevel).IsCritical() {
-						result.Status = "critical"
-						critical = true
-					} else {
-						result.Status = "warning"
-						warning = true
-					}
-				} else {
-					result.Status = "ok"
-				}
+				processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
 			default:
+				unknown = true
 				result.Status = "unknown"
 				result.Message = "Invalid check type"
 		}
@@ -79,18 +75,31 @@ func (server *Server) ProcessCheck() ([]byte, int, error) {
 	}
 	
 	var code int
-	result := Result{
-		Results: results,
-	}
+	result := Result{}
 	if critical {
 		result.Status = "critical"
 		code = HttpStatusCritical
+		if server.Config.LogLevel >= 1 {
+			result.Results = results
+		}
 	} else if warning {
 		result.Status = "warning"
 		code = HttpStatusWarning
+		if server.Config.LogLevel >= 2 {
+			result.Results = results
+		}
+	} else if unknown {
+		result.Status = "unknown"
+		code = HttpStatusUnknown
+		if server.Config.LogLevel >= 2 {
+			result.Results = results
+		}
 	} else {
 		result.Status = "ok"
 		code = HttpStatusOk
+		if server.Config.LogLevel >= 3 {
+			result.Results = results
+		}
 	}
 	
 	encoded, err := json.Marshal(result)
@@ -101,9 +110,9 @@ func (server *Server) ProcessCheck() ([]byte, int, error) {
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	switch SanitisePath(request.URL.Path) {
+	switch sanitisePath(request.URL.Path) {
 		case "/":
-			content, status, err := server.ProcessCheck()
+			content, status, err := server.processCheck()
 			if err == nil {
 				writer.Header().Set("Content-Type", "application/json")
 				writer.WriteHeader(status)

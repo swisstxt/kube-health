@@ -29,6 +29,7 @@ type CheckConfiguration struct {
 
 type Configuration struct {
 	Listen string `json:"listen"`
+	LogLevel int `json:"loglevel"`
 	Checks []CheckConfiguration `json:"checks"`
 }
 

@@ -17,6 +17,11 @@ const (
 	defaultConfigName = "/etc/kube-health/config.json"
 )
 
+var (
+	version string = ""
+	revision string = ""
+)
+
 func main() {
 	var configname string
 	if len(os.Args) > 1 {
@@ -24,6 +29,16 @@ func main() {
 	} else {
 		configname = defaultConfigName
 	}
+	
+	vstring := ""
+	if version != "" {
+		vstring += " version " + version
+	}
+	if revision != "" {
+		vstring += " revision " + revision
+	}
+	log.Print("kube-health" + vstring)
+	log.Print("Copyright © 2017-2018 Gregor Riepl")
 	
 	config, err := LoadConfiguration(configname)
 	if err != nil {

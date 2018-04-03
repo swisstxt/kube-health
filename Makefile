@@ -1,21 +1,23 @@
 GO=go
 GOVENDOR=govendor
-GOPATH=$(shell pwd)
+SRCROOT=$(shell pwd)
+RELEASE=$(shell git describe --abbrev=0 --tags)
+COMMIT=$(shell git rev-parse --short HEAD)
 
-SOURCES=src/health/config.go src/health/error.go src/health/ping.go src/health/server.go src/health/http.go
+SOURCES=config.go error.go ping.go server.go http.go health.go
 
 .PHONY: all container clean vendor
 
-all: bin/kubehealth
+all: kube-health
 
 clean:
-	rm -f bin/kubehealth
+	rm -f kube-health
 
-container: bin/kubehealth
-	docker build -t kube-health ${GOPATH}
+container: kube-health
+	docker build -t kube-health ${SRCROOT}
 
 vendor:
 	cd src/health; ${GOVENDOR} update +v +m
 
-bin/kubehealth: src/health.go ${SOURCES}
-	${GO} build -tags netgo -o $@ $<
+kube-health: ${SOURCES}
+	${GO} build -tags netgo -ldflags "-X main.version=${RELEASE} -X main.revision=${COMMIT}" -o $@ $^

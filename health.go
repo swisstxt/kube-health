@@ -8,9 +8,9 @@
 package main
 
 import (
-	"os"
 	"log"
 	"net/http"
+	"os"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	version string = ""
+	version  string = ""
 	revision string = ""
 )
 
@@ -29,7 +29,7 @@ func main() {
 	} else {
 		configname = defaultConfigName
 	}
-	
+
 	vstring := ""
 	if version != "" {
 		vstring += " version " + version
@@ -39,12 +39,12 @@ func main() {
 	}
 	log.Print("kube-health" + vstring)
 	log.Print("Copyright © 2017-2018 Gregor Riepl")
-	
+
 	config, err := LoadConfiguration(configname)
 	if err != nil {
 		log.Fatal("Error loading configuration: ", err.Error())
 	}
-	
+
 	server := &Server{Config: config}
 	log.Fatal(http.ListenAndServe(config.Listen, server))
 }

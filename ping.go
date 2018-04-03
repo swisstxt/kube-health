@@ -1,22 +1,22 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"time"
-	"strings"
+	"os/exec"
 	"regexp"
 	"strconv"
-	"bytes"
-	"os/exec"
+	"strings"
+	"time"
 )
 
 const (
-	errResolve = Error("resolving address")
+	errResolve     = Error("resolving address")
 	warnPacketLoss = Warning("packet loss warning")
-	errPacketLoss = Error("packet loss critical")
-	errExec = Error("calling ping")
-	errParse = Error("parsing output")
-	errPing = Error("error returned")
+	errPacketLoss  = Error("packet loss critical")
+	errExec        = Error("calling ping")
+	errParse       = Error("parsing output")
+	errPing        = Error("error returned")
 )
 
 var (
@@ -25,14 +25,12 @@ var (
 
 func ProcessPing(addr string, timeout time.Duration, count int, warnLost float64, errLost float64) (string, error) {
 	cmd := exec.Command("ping", "-c", strconv.FormatInt(int64(count), 10), "-n", "-q", "-W", strconv.FormatInt(int64(timeout.Seconds()), 10), addr)
-	
+
 	stdout := &bytes.Buffer{}
 	cmd.Stdout = stdout
 	stderr := &bytes.Buffer{}
 	cmd.Stderr = stderr
-	
-	
-	
+
 	err := cmd.Run()
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); !ok {
@@ -41,7 +39,7 @@ func ProcessPing(addr string, timeout time.Duration, count int, warnLost float64
 		}
 		// non-zero return codes are treated as errors by Go, but we'll handle them below
 	}
-	
+
 	found := false
 	//sent := -1
 	//received := -1
@@ -57,7 +55,7 @@ func ProcessPing(addr string, timeout time.Duration, count int, warnLost float64
 			found = true
 		}
 	}
-	
+
 	if found {
 		if loss >= errLost {
 			message := fmt.Sprintf("Critical packet loss: %d%%", int(loss))
@@ -70,7 +68,7 @@ func ProcessPing(addr string, timeout time.Duration, count int, warnLost float64
 		message := fmt.Sprintf("No packet loss, RTT %dms", rtt)
 		return message, nil
 	}
-	
+
 	message := fmt.Sprintf("Ping error: %s", stderr.String())
 	return message, errPing
 }

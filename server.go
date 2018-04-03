@@ -1,28 +1,28 @@
 package main
 
 import (
-	"time"
+	"encoding/json"
+	"net/http"
 	"path"
 	"strings"
-	"net/http"
-	"encoding/json"
+	"time"
 )
 
 const (
-	HttpStatusOk = http.StatusOK
-	HttpStatusWarning = 280
+	HttpStatusOk       = http.StatusOK
+	HttpStatusWarning  = 280
 	HttpStatusCritical = 290
-	HttpStatusUnknown = 270
+	HttpStatusUnknown  = 270
 )
 
 type CheckResult struct {
-	Status string `json:"status"`
-	Message string `json:"message"`
-	Check CheckConfiguration `json:"check"`
+	Status  string             `json:"status"`
+	Message string             `json:"message"`
+	Check   CheckConfiguration `json:"check"`
 }
 
 type Result struct {
-	Status string `json:"status"`
+	Status  string        `json:"status"`
 	Results []CheckResult `json:"results,omitempty"`
 }
 
@@ -54,26 +54,26 @@ func (server *Server) processCheck() ([]byte, int, error) {
 	warning := false
 	critical := false
 	unknown := false
-	
+
 	for i, check := range server.Config.Checks {
 		result := CheckResult{
 			Check: check,
 		}
 		switch check.Type {
-			case "ping":
-				message, err := ProcessPing(check.Url, time.Second * time.Duration(check.Timeout), check.Ping.Count, float64(check.Ping.Warning), float64(check.Ping.Error))
-				processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
-			case "http":
-				message, err := ProcessHttp(check.Url, time.Second * time.Duration(check.Timeout), check.Http.Status, check.Http.InvertStatus, check.Http.Contains, check.Http.InvertMatch, check.Http.CaBundle)
-				processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
-			default:
-				unknown = true
-				result.Status = "unknown"
-				result.Message = "Invalid check type"
+		case "ping":
+			message, err := ProcessPing(check.Url, time.Second*time.Duration(check.Timeout), check.Ping.Count, float64(check.Ping.Warning), float64(check.Ping.Error))
+			processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
+		case "http":
+			message, err := ProcessHttp(check.Url, time.Second*time.Duration(check.Timeout), check.Http.Status, check.Http.InvertStatus, check.Http.Contains, check.Http.InvertMatch, check.Http.CaBundle)
+			processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
+		default:
+			unknown = true
+			result.Status = "unknown"
+			result.Message = "Invalid check type"
 		}
 		results[i] = result
 	}
-	
+
 	var code int
 	result := Result{}
 	if critical {
@@ -101,7 +101,7 @@ func (server *Server) processCheck() ([]byte, int, error) {
 			result.Results = results
 		}
 	}
-	
+
 	encoded, err := json.Marshal(result)
 	if err != nil {
 		return nil, 0, err
@@ -111,26 +111,26 @@ func (server *Server) processCheck() ([]byte, int, error) {
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	switch sanitisePath(request.URL.Path) {
-		case "/":
-			content, status, err := server.processCheck()
-			if err == nil {
-				writer.Header().Set("Content-Type", "application/json")
-				writer.WriteHeader(status)
-				writer.Write(content)
-			} else {
-				writer.Header().Set("Content-Type", "application/json")
-				writer.WriteHeader(http.StatusInternalServerError)
-				writer.Write([]byte("{\"status\":\"error\",\"error\":\"internal server error\"}"))
-			}
-		case "/healthz":
-			fallthrough
-		case "/live":
-				writer.Header().Set("Content-Type", "application/json")
-				writer.WriteHeader(http.StatusOK)
-				writer.Write([]byte("{\"status\":\"ok\"}"))
-		default:
+	case "/":
+		content, status, err := server.processCheck()
+		if err == nil {
 			writer.Header().Set("Content-Type", "application/json")
-			writer.WriteHeader(http.StatusNotFound)
-			writer.Write([]byte("{\"status\":\"error\",\"error\":\"invalid path\"}"))
+			writer.WriteHeader(status)
+			writer.Write(content)
+		} else {
+			writer.Header().Set("Content-Type", "application/json")
+			writer.WriteHeader(http.StatusInternalServerError)
+			writer.Write([]byte("{\"status\":\"error\",\"error\":\"internal server error\"}"))
+		}
+	case "/healthz":
+		fallthrough
+	case "/live":
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		writer.Write([]byte("{\"status\":\"ok\"}"))
+	default:
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusNotFound)
+		writer.Write([]byte("{\"status\":\"error\",\"error\":\"invalid path\"}"))
 	}
 }

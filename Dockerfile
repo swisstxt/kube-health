@@ -22,7 +22,7 @@ RUN adduser -h /health -H -D -s /bin/bash health && \
 	chmod 0750 /health
 
 # Install the web server
-COPY bin/kubehealth /bin/kubehealth
+COPY kube-health /bin/kubehealth
 # Install the default configuration file
 COPY example-config.json /etc/kubehealth/config.json
 

@@ -10,7 +10,6 @@ package main
 import (
 	"os"
 	"log"
-	"health"
 	"net/http"
 )
 
@@ -26,11 +25,11 @@ func main() {
 		configname = defaultConfigName
 	}
 	
-	config, err := health.LoadConfiguration(configname)
+	config, err := LoadConfiguration(configname)
 	if err != nil {
 		log.Fatal("Error loading configuration: ", err.Error())
 	}
 	
-	server := &health.Server{Config: config}
+	server := &Server{Config: config}
 	log.Fatal(http.ListenAndServe(config.Listen, server))
 }

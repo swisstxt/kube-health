@@ -6,7 +6,7 @@ stages:
 image: debian:stable-slim
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq docker golang make
+  - apt-get update -qq && apt-get install -y -qq docker golang make git
 
 test:
   stage: test

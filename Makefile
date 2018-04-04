@@ -7,6 +7,9 @@ COMMIT=$(shell git rev-parse --short HEAD)
 SOURCES=config.go error.go ping.go server.go http.go health.go
 TEST_SOURCES=config_test.go
 
+# Build without libc
+export CGO_ENABLED=0
+
 .PHONY: all container clean vendor test
 
 all: kube-health

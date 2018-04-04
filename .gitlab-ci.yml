@@ -1,0 +1,24 @@
+steps:
+  - test
+  - build
+  - container
+
+image: debian:stable-slim
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq docker golang make
+
+test:
+  step: test
+  script:
+    - make test
+
+build:
+  step: build
+  script:
+    - make kube-health
+
+container:
+  step: package
+  script:
+    - make container

@@ -34,8 +34,8 @@ package:
 push:
  stage: push
  script:
-   - docker login -u "gitlab-ci-token" -p "$CI_BUILD_TOKEN" $CI_REGISTRY
-   - docker tag kube-health:latest "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
-   - docker tag kube-health:latest "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
-   - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
-   - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+   - docker login -u "$NEXUS_USER" -p "$NEXUS_PASSWORD" $NEXUS_REGISTRY
+   - docker tag kube-health:latest "$NEXUS_REGISTRY/CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
+   - docker tag kube-health:latest "$NEXUS_REGISTRY/CI_PROJECT_NAME:$CI_COMMIT_SHA"
+   - docker push "$NEXUS_REGISTRY/CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
+   - docker push "$NEXUS_REGISTRY/CI_PROJECT_NAME:$CI_COMMIT_SHA"

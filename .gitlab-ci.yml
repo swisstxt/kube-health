@@ -1,7 +1,6 @@
 stages:
   - test
   - build
-  - push
 
 services:
   - docker:dind
@@ -23,12 +22,8 @@ build:
   script:
     - apk update && apk add --no-cache --virtual .build-deps gcc libc-dev libgcc make git go
     - make container
-
-push:
- stage: push
- script:
-   - docker login -u "$NEXUS_USER" -p "$NEXUS_PASSWORD" $NEXUS_REGISTRY
-   - docker tag kube-health:latest "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
-   - docker tag kube-health:latest "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA"
-   - docker push "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
-   - docker push "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA"
+    - docker login -u "$NEXUS_USER" -p "$NEXUS_PASSWORD" $NEXUS_REGISTRY
+    - docker tag kube-health:latest "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
+    - docker tag kube-health:latest "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA"
+    - docker push "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
+    - docker push "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA"

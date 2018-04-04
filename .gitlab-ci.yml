@@ -1,7 +1,6 @@
 stages:
   - test
   - build
-  - package
   - push
 
 services:
@@ -13,22 +12,16 @@ variables:
 
 image: docker:latest
 
-before_script:
-  - apk update && apk add --no-cache --virtual .build-deps gcc libc-dev libgcc make git go
-
 test:
   stage: test
   script:
+    - apk update && apk add --no-cache --virtual .build-deps gcc libc-dev libgcc make git go
     - make test
 
 build:
   stage: build
   script:
-    - make kube-health
-
-package:
-  stage: package
-  script:
+    - apk update && apk add --no-cache --virtual .build-deps gcc libc-dev libgcc make git go
     - make container
 
 push:

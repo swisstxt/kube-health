@@ -1,4 +1,4 @@
-steps:
+stages:
   - test
   - build
   - container
@@ -9,16 +9,16 @@ before_script:
   - apt-get update -qq && apt-get install -y -qq docker golang make
 
 test:
-  step: test
+  stage: test
   script:
     - make test
 
 build:
-  step: build
+  stage: build
   script:
     - make kube-health
 
 container:
-  step: package
+  stage: package
   script:
     - make container

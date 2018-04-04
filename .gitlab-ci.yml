@@ -2,9 +2,14 @@ stages:
   - test
   - build
   - package
+  - push
 
 services:
   - docker:dind
+
+variables:
+  RELEASE: $CI_COMMIT_TAG
+  REVISION: $CI_COMMIT_SHA
 
 image: docker:latest
 
@@ -25,3 +30,12 @@ package:
   stage: package
   script:
     - make container
+
+push:
+ stage: push
+ script:
+   - docker login -u "gitlab-ci-token" -p "$CI_BUILD_TOKEN" $CI_REGISTRY
+   - docker tag kube-health:latest "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+   - docker tag kube-health:latest "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+   - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+   - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"

@@ -3,10 +3,10 @@ stages:
   - build
   - package
 
-image: debian:stable-slim
+image: docker:latest
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq docker golang make git
+  - apk update && apk add go make git
 
 test:
   stage: test

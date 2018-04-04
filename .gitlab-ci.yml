@@ -6,7 +6,7 @@ stages:
 image: docker:latest
 
 before_script:
-  - apk update && apk add go make git
+  - apk update && apk add --no-cache --virtual .build-deps gcc libc-dev libgcc make git go
 
 test:
   stage: test

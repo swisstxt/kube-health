@@ -27,7 +27,7 @@ The log levels are as follows:
 2. also return check results when unknown or warning
 3. always return check results
 
-It is recommended to keep the log level at 1 or 2.
+Log levels at 1 or 2 are the most useful ones.
 
 Save and run:
 ```
@@ -60,7 +60,7 @@ docker tag kube-health <docker-registry.tld>/kube-health
 docker push <docker-registry.tld>/kube-health
 ```
 
-You should also tag the images with the release version, if you are build a release.
+You should also tag the images with the release version, if you are building a release.
 
 ## Kubernetes
 

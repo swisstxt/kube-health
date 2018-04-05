@@ -20,7 +20,7 @@ test:
 build:
   stage: build
   script:
-    - docker build -t kube-health --build-arg "RELEASE=$RELEASE" --build-arg "COMMIT=$COMMIT"
+    - docker build -t kube-health --build-arg "RELEASE=$RELEASE" --build-arg "COMMIT=$COMMIT" .
     - docker login -u "$NEXUS_USER" -p "$NEXUS_PASSWORD" $NEXUS_REGISTRY
     - docker tag kube-health:latest "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_REF_NAME"
     - docker tag kube-health:latest "$NEXUS_REGISTRY/$CI_PROJECT_NAME:$CI_COMMIT_SHA"

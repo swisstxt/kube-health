@@ -1,5 +1,22 @@
 # Create a Docker container that reports health from inside a Kubernetes cluster
 
+
+# Build stage
+FROM golang:1.10-alpine AS build
+
+# Pass build arguments
+ARG RELEASE=
+ARG COMMIT=
+
+# Copy source code
+WORKDIR /go/src/kube-health/
+COPY . .
+
+# Build container
+RUN CGO_ENABLED=0 go build -tags netgo -ldflags "-X main.version=$RELEASE -X main.revision=$COMMIT" -o kube-health *.go
+
+
+# Image creation stage
 FROM alpine:latest
 
 # Some metadata
@@ -14,7 +31,7 @@ ENV LANG C.UTF-8
 RUN apk update && apk upgrade
 
 # Install dependencies
-RUN apk add ca-certificates iputils
+RUN apk --no-cache add ca-certificates iputils
 
 RUN adduser -h /health -H -D -s /bin/bash health && \
 	mkdir -p /health && \
@@ -22,7 +39,7 @@ RUN adduser -h /health -H -D -s /bin/bash health && \
 	chmod 0750 /health
 
 # Install the web server
-COPY kube-health /bin/kubehealth
+COPY --from=build /go/src/kube-health/kube-health /bin/kubehealth
 # Install the default configuration file
 COPY example-config.json /etc/kubehealth/config.json
 

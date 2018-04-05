@@ -17,8 +17,8 @@ all: kube-health
 clean:
 	rm -f kube-health
 
-container: kube-health
-	docker build -t kube-health ${SRCROOT}
+container:
+	docker build -t kube-health --build-arg "RELEASE=${RELEASE}" --build-arg "COMMIT=${COMMIT}" ${SRCROOT}
 
 vendor:
 	cd src/health; ${GOVENDOR} update +v +m

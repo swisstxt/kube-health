@@ -77,7 +77,7 @@ kubectl create configmap kube-health --from-file config.json -n kube-system
 
 ## Legal
 
-kube-health is copyright © 2017 by Gregor Riepl and Swiss TXT AG.
+kube-health is copyright © 2017-2018 by Gregor Riepl and Swiss TXT AG.
 
 You may use it under the terms of the MIT license.
 Please see the [LICENSE](LICENSE) file for details.

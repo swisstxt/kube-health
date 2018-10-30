@@ -25,6 +25,9 @@ type CheckConfiguration struct {
 		InvertMatch  bool   `json:"invert_match"`
 		CaBundle     string `json:"ca_certificates"`
 	} `json:"http"`
+	Dns struct {
+		Expect string `json:"expect"`
+	} `json:"dns"`
 }
 
 type Configuration struct {

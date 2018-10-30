@@ -13,6 +13,13 @@
 			}
 		},
 		{
+			"type": "dns",
+			"url": "www.heise.de",
+			"dns": {
+				"expect": "193.99.144.85"
+			}
+		},
+		{
 			"type": "http",
 			"url": "https://kubernetes.default.svc/healthz",
 			"timeout": 3,

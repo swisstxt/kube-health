@@ -66,6 +66,9 @@ func (server *Server) processCheck() ([]byte, int, error) {
 		case "http":
 			message, err := ProcessHttp(check.Url, time.Second*time.Duration(check.Timeout), check.Http.Status, check.Http.InvertStatus, check.Http.Contains, check.Http.InvertMatch, check.Http.CaBundle)
 			processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
+		case "dns":
+			message, err := ProcessDns(check.Url, check.Dns.Expect, time.Second*time.Duration(check.Timeout))
+			processError(&result, message, err, server.Config.LogLevel, &critical, &warning)
 		default:
 			unknown = true
 			result.Status = "unknown"

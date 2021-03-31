@@ -1,0 +1,21 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Go vet
+        run: go vet
+      - name: Go test
+        run: go test -v
+      - name: Go format
+        run: gofmt -l . && test -z $(gofmt -l .)
+      - name: Go build
+        run: CGO_ENABLED=0 go build -ldflags "-X main.version=${GITHUB_REF#refs/*/} -X main.revision=${GITHUB_SHA}"

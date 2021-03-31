@@ -35,7 +35,7 @@ func ProcessDns(name string, expected string, timeout time.Duration) (string, er
 		message := fmt.Sprintf("Address %s found in [%s]", expected, strings.Join(addrs, ","))
 		return message, nil
 	} else {
-		message := fmt.Sprintf("Address %s not found in [%s]", strings.Join(addrs, ","))
+		message := fmt.Sprintf("Address %s not found in [%s]", expected, strings.Join(addrs, ","))
 		return message, errNoDnsNameMatch
 	}
 }
